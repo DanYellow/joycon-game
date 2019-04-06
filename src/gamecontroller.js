@@ -48,7 +48,7 @@ var gamepads = {};
 
 function gamepadHandler(event, connecting) {
     var gamepad = event.gamepad;
-
+    console.log('fzadaz', event);
     // Note:
     // gamepad === navigator.getGamepads()[gamepad.index]
 
