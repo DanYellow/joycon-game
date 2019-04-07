@@ -1,0 +1,34 @@
+.permutation-indicator {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.permutation-indicator .buttons {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    grid-column-gap: 25px;
+    grid-row-gap: 25px;
+    justify-items: stretch;
+    align-items: stretch;
+    transform: rotate(0.785398rad);
+}
+
+.permutation-indicator .circle {
+    width: 150px;
+    height: 150px;
+    background-color: whitesmoke;
+    border-radius: 50%;
+}
+
+.permutation-indicator .circle.is-active {
+    background-color: black;
+}
+
+.permutation-indicator p {
+    color: white;
+    font-weight: bold;
+    font-size: 35px;
+    margin-top: 65px;
+}

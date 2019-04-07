@@ -1,0 +1,30 @@
+.joy-con {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    flex-direction: column;
+    align-items: center;
+}
+
+.joy-con p {
+    color: white;
+    font-weight: bold;
+    font-size: 35px;
+}
+
+.illustrations {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    opacity: 0.5;
+    margin-bottom: 20px;
+}
+
+.joy-con .illustrations.is-enabled {
+    opacity: 1;
+}
+
+.joy-con img:first-child {
+    display: inline-block;
+    margin-right: 30px;
+}
