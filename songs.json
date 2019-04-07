@@ -1,0 +1,27 @@
+[
+    {
+        "song": "test-song.mp3",
+        "loop": {
+            "start": 31,
+            "end": 67
+        },
+        "choices": [
+            {
+                "name": "Our God (our God) is an Awesome God",
+                "isResponse": true
+            },
+            {
+                "name": "Our God (our God) is an Awesome God",
+                "isResponse": false
+            },
+            {
+                "name": "Our God (our God) is an Awesome God",
+                "isResponse": false
+            },
+            {
+                "name": "Our God (our God) is an Awesome God",
+                "isResponse": false
+            }
+        ]
+    }
+]

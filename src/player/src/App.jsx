@@ -17,6 +17,15 @@ const buttonMapping = {
     15: 'D_RIGHT',
 };
 
+// Indexes : joy-con r
+// Values : joy-con l
+const joyconMapping = {
+    0: 13,
+    1: 15,
+    2: 14,
+    3: 12,
+};
+
 class App extends Component {
     constructor(props) {
         super(props);
@@ -36,8 +45,12 @@ class App extends Component {
             isStartScreen: true,
             isGameScreen: false,
             isResultScreen: false,
-
+            hasEnterRightPermutation: false,
             showGameScreen: false,
+            inputsCaptured: {
+                teamA: [],
+                teamB: [],
+            },
         };
 
         this.startGame = this.startGame.bind(this);
@@ -81,16 +94,9 @@ class App extends Component {
                 strongMagnitude: 1.0,
             });
             this.serverMessagesHandler();
-            this.setState(
-                {
-                    isControllersConnected: true,
-                },
-                () => {
-                    this.raf = requestAnimationFrame(
-                        this.captureGamepadListInputs
-                    );
-                }
-            );
+            this.setState({
+                isControllersConnected: true,
+            });
         } else {
             this.setState(
                 {
@@ -126,12 +132,13 @@ class App extends Component {
             .filter(x => x)
             .find(gamepad => gamepad.id.includes('Joy-Con L+R'));
 
-        // console.log(this.getInputPressed(joyconController));
+        console.log(this.getInputPressed(joyconController));
         requestAnimationFrame(this.captureGamepadListInputs);
     }
 
     startGame() {
         this.socket.emit('ready_to_play');
+        this.raf = requestAnimationFrame(this.captureGamepadListInputs);
     }
 
     onMaxScoreReached() {
@@ -144,6 +151,11 @@ class App extends Component {
                 isGameScreen: true,
                 isStartScreen: false,
                 currentPermutation: msg.permutation,
+                songInfo: {
+                    src: msg.song,
+                    choices: msg.choices,
+                    loop: msg.loop,
+                },
             });
             console.log('msg', msg);
         });
@@ -155,6 +167,7 @@ class App extends Component {
             isGameScreen,
             isStartScreen,
             currentPermutation,
+            songInfo,
         } = this.state;
 
         return (
@@ -170,6 +183,7 @@ class App extends Component {
                     <GameScreen
                         permutation={currentPermutation}
                         handleMaxScoreReached={this.onMaxScoreReached}
+                        songInfo={songInfo}
                     />
                 )}
             </div>

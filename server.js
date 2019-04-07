@@ -1,8 +1,13 @@
-var express = require('express');
-var app = require('express')();
-var http = require('http').Server(app);
-var io = require('socket.io')(http);
-var port = 8080;
+const express = require('express');
+const app = require('express')();
+const http = require('http').Server(app);
+const io = require('socket.io')(http);
+const _ = require('lodash');
+const songs = require('./songs.json');
+
+const songsCopy = Object.assign([], songs);
+
+const port = 8080;
 
 app.use(express.static(__dirname + '/src'));
 
@@ -11,31 +16,23 @@ app.get('/', function(req, res) {
     res.sendFile(__dirname + '/src/index.html');
 });
 
-const buttonMapping = {
-    0: 'B',
-    1: 'A',
-    2: 'Y',
-    3: 'X',
-    12: 'D_UP',
-    13: 'D_DOWN',
-    14: 'D_LEFT',
-    15: 'D_RIGHT',
-};
-
 io.on('connection', function(socket) {
     console.log('a user connected');
     socket.on('disconnect', function() {
         console.log('user disconnected');
     });
 
-    // socket.on('chat message', function(msg) {
-    //     console.log('message: ' + msg);
-    // });
-
     socket.on('ready_to_play', () => {
-        socket.emit('generate_permutation', {
-            permutation: [3, 0, 2, 1],
-        });
+        const randIndex = Math.floor(Math.random() * songsCopy.length);
+        const randomSong = songsCopy[randIndex];
+        // songsCopy.splice(randIndex, 1);
+
+        const message = Object.assign(
+            {},
+            { permutation: _.shuffle([0, 1, 2, 3]) },
+            randomSong
+        );
+        socket.emit('generate_permutation', message);
     });
 });
 

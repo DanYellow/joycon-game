@@ -1,58 +1,56 @@
 import React, { Component, Fragment } from 'react';
 
-import classNames from 'classnames';
+import WaveWhite from '../images/wave-white.png';
 
 import './game.css';
 
-const sleep = milliseconds => {
-    return new Promise(resolve => setTimeout(resolve, milliseconds));
-};
-
 class PermutationIndicator extends Component {
     componentDidMount() {
-        const TIME_SEQ_PLAY = 750;
-        const circleList = Array.from(
-            document.getElementsByClassName('circle')
-        );
+        this.circleList = Array.from(document.getElementsByClassName('circle'));
 
-        let i = 0;
-        let nbSeqPlayed = 2;
-        const NB_REPLAY_SEQ_MAX = 2;
+        this.i = 0;
+        this.nbSeqPlayed = 0;
+        this.TIME_SEQ_PLAY = 750;
+        this.TIME_BETWEEN_SEQ_PLAY = 1700;
+        this.NB_REPLAY_SEQ_MAX = 0;
+
+        this.playSequence = this.playSequence.bind(this);
+
+        this.playSequence();
+    }
+
+    playSequence() {
         const { sequence } = this.props;
+        setTimeout(() => {
+            this.circleList.forEach(circle => {
+                circle.classList.remove('is-active');
+            });
+            const seqItem = sequence[this.i];
+            const circle = this.circleList[seqItem];
+            circle.classList.add('is-active');
+            this.i++;
+            if (this.i < this.circleList.length) {
+                this.playSequence();
+            } else {
+                this.i = 0;
+                setTimeout(() => {
+                    this.circleList.forEach(circle => {
+                        circle.classList.remove('is-active');
+                    });
+                }, this.TIME_SEQ_PLAY);
 
-        function playSequence() {
-            console.log();
-            //  create a loop function
-            setTimeout(function() {
-                circleList.forEach(circle => {
-                    circle.classList.remove('is-active');
-                });
-                const seqItem = sequence[i];
-                const circle = circleList[seqItem];
-                circle.classList.add('is-active');
-                i++;
-                if (i < circleList.length) {
-                    playSequence();
+                if (this.nbSeqPlayed < this.NB_REPLAY_SEQ_MAX) {
+                    this.nbSeqPlayed = this.nbSeqPlayed + 1;
+                    setTimeout(() => {
+                        this.playSequence();
+                    }, this.TIME_BETWEEN_SEQ_PLAY);
                 } else {
-                    i = 0;
-                    setTimeout(function() {
-                        circleList.forEach(circle => {
-                            circle.classList.remove('is-active');
-                        });
-                    }, TIME_SEQ_PLAY);
-
-                    if (nbSeqPlayed < NB_REPLAY_SEQ_MAX) {
-                        console.log('hellofefe');
-                        nbSeqPlayed = nbSeqPlayed + 1;
-                        playSequence();
-                    } else {
-                        console.log('frgrege');
-                    }
+                    setTimeout(() => {
+                        this.props.handleSequenceEnded();
+                    }, this.TIME_SEQ_PLAY);
                 }
-            }, TIME_SEQ_PLAY);
-        }
-
-        playSequence();
+            }
+        }, this.TIME_SEQ_PLAY);
     }
 
     render() {
@@ -72,57 +70,64 @@ class PermutationIndicator extends Component {
     }
 }
 
-// const PermutationIndicator = props => {
-//     const circleList = Array.from(document.getElementsByClassName('circle'));
+class AudioPlayer extends Component {
+    constructor(props) {
+        super(props);
 
-//     let i = 0;
-//     const { sequence } = props;
-
-//     function myLoop() {
-//         //  create a loop function
-//         setTimeout(function() {
-//             console.log('i', i, circleList);
-//             console.log(circleList[i]);
-//             i++;
-//             if (i < circleList.length) {
-//                 myLoop();
-//             }
-//         }, 1500);
-//     }
-
-//     myLoop();
-//     // sequence.forEach(element => {
-//     //     sleep(1500).then(() => {
-//     //         console.log('ff', element);
-//     //     });
-//     // });
-//     return (
-//         <Fragment>
-//             <div className="permutation-indicator">
-//                 <div className="buttons">
-//                     <div className="circle" />
-//                     <div className="circle" />
-//                     <div className="circle" />
-//                     <div className="circle" />
-//                 </div>
-//                 <p>Mémorisez la permutation </p>
-//             </div>
-//         </Fragment>
-//     );
-// };
+        this.audioPlayer = React.createRef();
+    }
+    render() {
+        const { songInfo } = this.props;
+        return (
+            <div className="audio-player">
+                <div className="illustration">
+                    <img src={WaveWhite} alt="" />
+                </div>
+                <audio
+                    ref={this.audioPlayer}
+                    src={`songs/${songInfo.src}`}
+                    controls
+                    autoPlay
+                    muted={true}
+                />
+            </div>
+        );
+    }
+}
 
 class GameScreen extends Component {
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            showInputSequence: true,
+            showAudioPlayer: false,
+            showResults: false,
+        };
+        this.showAudioPlayer = this.showAudioPlayer.bind(this);
+    }
+
+    showAudioPlayer() {
+        this.setState({
+            showAudioPlayer: true,
+            showInputSequence: false,
+        });
+    }
+
     render() {
-        const { permutation } = this.props;
-        // const {
-        //     isControllersConnected,
-        //     isGameScreen,
-        //     isStartScreen,
-        // } = this.state;
+        const { permutation, songInfo } = this.props;
+        const { showInputSequence, showAudioPlayer, showResults } = this.state;
 
         return (
             <Fragment>
-                <PermutationIndicator sequence={permutation} />
+                {showInputSequence && (
+                    <PermutationIndicator
+                        sequence={permutation}
+                        handleSequenceEnded={this.showAudioPlayer}
+                    />
+                )}
+
+                {showAudioPlayer && <AudioPlayer songInfo={songInfo} />}
             </Fragment>
         );
     }
