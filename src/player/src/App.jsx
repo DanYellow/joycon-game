@@ -11,11 +11,17 @@ const buttonMapping = {
     1: 'A',
     2: 'Y',
     3: 'X',
+    18: 'L_SL',
+    19: 'L_SR',
+    20: 'R_SL',
+    21: 'R_SR',
     12: 'D_UP',
     13: 'D_DOWN',
     14: 'D_LEFT',
     15: 'D_RIGHT',
 };
+
+const leftJoyConBtns = [12, 13, 14, 15, 18, 19];
 
 // Indexes : joy-con r
 // Values : joy-con l
@@ -116,12 +122,32 @@ class App extends Component {
                 value: button.value,
                 index: index,
                 button: buttonMapping[index],
+                joycon: leftJoyConBtns.includes(index) ? 'LEFT' : 'RIGHT',
             };
         });
 
         const buttonsPressed = allButtons.filter(button => button.value === 1);
 
         return buttonsPressed;
+    }
+
+    isReinitCapture(inputList) {
+        const isSameJoyCon = inputList.every(
+            (input, _, arr) => input.joycon === arr[0].joycon
+        );
+
+        if (isSameJoyCon) {
+            return inputList.every(input => {
+                return (
+                    input.index === 18 ||
+                    input.index === 19 ||
+                    input.index === 20 ||
+                    input.index === 21
+                );
+            });
+        }
+
+        return false;
     }
 
     captureGamepadListInputs() {
@@ -132,7 +158,60 @@ class App extends Component {
             .filter(x => x)
             .find(gamepad => gamepad.id.includes('Joy-Con L+R'));
 
-        console.log(this.getInputPressed(joyconController));
+        const inputListPressed = this.getInputPressed(joyconController);
+
+        if (inputListPressed.length) {
+            let isReinitCapture = false;
+            let joyConReset = null;
+            if (inputListPressed.length === 2) {
+                isReinitCapture = this.isReinitCapture(inputListPressed);
+                joyConReset = inputListPressed[0].joycon;
+            }
+
+            const isLeftJoyConReset = isReinitCapture && joyConReset === 'LEFT';
+            const isRightJoyConReset =
+                isReinitCapture && joyConReset === 'RIGHT';
+
+            this.setState(prevState => {
+                return {
+                    ...prevState,
+                    inputsCaptured: {
+                        ...(isLeftJoyConReset
+                            ? { teamA: [] }
+                            : {
+                                  teamA: Array.from(
+                                      new Set([
+                                          ...prevState.inputsCaptured.teamA,
+                                          ...inputListPressed
+                                              .filter(
+                                                  input =>
+                                                      input.joycon === 'LEFT'
+                                              )
+                                              .map(input => input.index),
+                                      ])
+                                  ),
+                              }),
+                        ...(isRightJoyConReset
+                            ? { teamB: [] }
+                            : {
+                                  teamB: Array.from(
+                                      new Set([
+                                          ...prevState.inputsCaptured.teamB,
+                                          ...inputListPressed
+                                              .filter(
+                                                  input =>
+                                                      input.joycon === 'RIGHT'
+                                              )
+                                              .map(input => input.index),
+                                      ])
+                                  ),
+                              }),
+                    },
+                };
+            });
+            console.log(this.getInputPressed(joyconController));
+        }
+
         requestAnimationFrame(this.captureGamepadListInputs);
     }
 
@@ -168,6 +247,7 @@ class App extends Component {
             isStartScreen,
             currentPermutation,
             songInfo,
+            inputsCaptured,
         } = this.state;
 
         return (
@@ -184,6 +264,7 @@ class App extends Component {
                         permutation={currentPermutation}
                         handleMaxScoreReached={this.onMaxScoreReached}
                         songInfo={songInfo}
+                        inputsCaptured={inputsCaptured}
                     />
                 )}
             </div>
