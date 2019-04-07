@@ -1,8 +1,28 @@
 import React, { Component, Fragment } from 'react';
 
+import ChoicesScreen from './choices';
+
 import WaveWhite from '../images/wave-white.png';
 
 import './game.css';
+
+const JoyConMainButtonUi = () => (
+    <div className="buttons">
+        <div className="circle" />
+        <div className="circle" />
+        <div className="circle" />
+        <div className="circle" />
+    </div>
+);
+
+// Div index
+// value button
+const positionMappingButtonList = {
+    0: 1,
+    1: 0,
+    2: 2,
+    3: 3,
+};
 
 class PermutationIndicator extends Component {
     componentDidMount() {
@@ -26,6 +46,7 @@ class PermutationIndicator extends Component {
                 circle.classList.remove('is-active');
             });
             const seqItem = sequence[this.i];
+
             const circle = this.circleList[seqItem];
             circle.classList.add('is-active');
             this.i++;
@@ -57,12 +78,7 @@ class PermutationIndicator extends Component {
         return (
             <Fragment>
                 <div className="permutation-indicator">
-                    <div className="buttons">
-                        <div className="circle" />
-                        <div className="circle" />
-                        <div className="circle" />
-                        <div className="circle" />
-                    </div>
+                    <JoyConMainButtonUi />
                     <p>Mémorisez la permutation </p>
                 </div>
             </Fragment>
@@ -103,8 +119,18 @@ class GameScreen extends Component {
             showInputSequence: true,
             showAudioPlayer: false,
             showResults: false,
+            showChoices: false,
+            showSelectNbChoices: false,
+            teamTurn: null,
         };
         this.showAudioPlayer = this.showAudioPlayer.bind(this);
+        this.checkTeamInputListCaptured = this.checkTeamInputListCaptured.bind(
+            this
+        );
+    }
+
+    componentDidMount() {
+        this.raf = requestAnimationFrame(this.checkTeamInputListCaptured);
     }
 
     showAudioPlayer() {
@@ -114,9 +140,76 @@ class GameScreen extends Component {
         });
     }
 
+    checkTeamInputListCaptured() {
+        const { showAudioPlayer, showSelectNbChoices, teamTurn } = this.state;
+
+        const {
+            permutation,
+            inputsCaptured,
+            handlePermutationTriggered,
+        } = this.props;
+        if (!teamTurn || showAudioPlayer) {
+            const inputListTeamA = inputsCaptured.teamA;
+            const inputListTeamB = inputsCaptured.teamB;
+
+            if (
+                JSON.stringify(inputListTeamA) === JSON.stringify(permutation)
+            ) {
+                this.setState(
+                    {
+                        teamTurn: 'teamA',
+                        showSelectNbChoices: true,
+                        showAudioPlayer: false,
+                        showInputSequence: false,
+                    },
+                    () => {
+                        handlePermutationTriggered();
+                    }
+                );
+            }
+
+            if (
+                JSON.stringify(inputListTeamB) === JSON.stringify(permutation)
+            ) {
+                this.setState(
+                    {
+                        teamTurn: 'teamB',
+                        showSelectNbChoices: true,
+                        showAudioPlayer: false,
+                        showInputSequence: false,
+                    },
+                    () => {
+                        handlePermutationTriggered();
+                    }
+                );
+            }
+        }
+
+        if (!showAudioPlayer && teamTurn && showSelectNbChoices) {
+            const choice = inputsCaptured[teamTurn];
+            if (choice) {
+                console.log('inputsCaptured', choice);
+            }
+            // this.setState({
+            //     showSelectNbChoices: false,
+            //     showChoices: true,
+            // });
+        }
+
+        requestAnimationFrame(this.checkTeamInputListCaptured);
+    }
+
     render() {
-        const { permutation, songInfo } = this.props;
-        const { showInputSequence, showAudioPlayer, showResults } = this.state;
+        const { permutation, songInfo, inputsCaptured } = this.props;
+        const {
+            showInputSequence,
+            showAudioPlayer,
+            showChoices,
+            showSelectNbChoices,
+            teamTurn,
+        } = this.state;
+
+        const choice = teamTurn ? inputsCaptured[teamTurn] : null;
 
         return (
             <Fragment>
@@ -128,6 +221,15 @@ class GameScreen extends Component {
                 )}
 
                 {showAudioPlayer && <AudioPlayer songInfo={songInfo} />}
+                {(showChoices || showSelectNbChoices) && (
+                    <ChoicesScreen
+                        isSelectNbChoicesStep={showSelectNbChoices}
+                        isSelectChoiceStep={showChoices}
+                        songInfo={songInfo}
+                        inputsCaptured={inputsCaptured}
+                        choice={choice}
+                    />
+                )}
             </Fragment>
         );
     }

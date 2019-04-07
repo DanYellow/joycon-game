@@ -29,7 +29,7 @@ io.on('connection', function(socket) {
 
         const message = Object.assign(
             {},
-            { permutation: _.shuffle([0, 1, 2, 3]) },
+            { permutation: [2, 3, 0, 1] }, //_.shuffle([0, 1, 2, 3]) },
             randomSong
         );
         socket.emit('generate_permutation', message);

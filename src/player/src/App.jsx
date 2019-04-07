@@ -24,7 +24,7 @@ const buttonMapping = {
 const leftJoyConBtns = [12, 13, 14, 15, 18, 19];
 
 // Indexes : joy-con r
-// Values : joy-con l
+// Values : joy-con Z
 const joyconMapping = {
     0: 13,
     1: 15,
@@ -66,6 +66,8 @@ class App extends Component {
             this
         );
         this.serverMessagesHandler = this.serverMessagesHandler.bind(this);
+        this.onPermutationTriggered = this.onPermutationTriggered.bind(this);
+        this.clearAllInputsCaptured = this.clearAllInputsCaptured.bind(this);
     }
 
     componentDidMount() {
@@ -171,6 +173,9 @@ class App extends Component {
             const isLeftJoyConReset = isReinitCapture && joyConReset === 'LEFT';
             const isRightJoyConReset =
                 isReinitCapture && joyConReset === 'RIGHT';
+            const inputListCapturable = Object.entries(joyconMapping)
+                .flat()
+                .map(input => Number(input));
 
             this.setState(prevState => {
                 return {
@@ -185,7 +190,10 @@ class App extends Component {
                                           ...inputListPressed
                                               .filter(
                                                   input =>
-                                                      input.joycon === 'LEFT'
+                                                      input.joycon === 'LEFT' &&
+                                                      inputListCapturable.includes(
+                                                          input.index
+                                                      )
                                               )
                                               .map(input => input.index),
                                       ])
@@ -200,7 +208,11 @@ class App extends Component {
                                           ...inputListPressed
                                               .filter(
                                                   input =>
-                                                      input.joycon === 'RIGHT'
+                                                      input.joycon ===
+                                                          'RIGHT' &&
+                                                      inputListCapturable.includes(
+                                                          input.index
+                                                      )
                                               )
                                               .map(input => input.index),
                                       ])
@@ -209,7 +221,7 @@ class App extends Component {
                     },
                 };
             });
-            console.log(this.getInputPressed(joyconController));
+            // console.log(this.getInputPressed(joyconController));
         }
 
         requestAnimationFrame(this.captureGamepadListInputs);
@@ -222,6 +234,24 @@ class App extends Component {
 
     onMaxScoreReached() {
         console.log('onMaxScoreReached');
+    }
+
+    clearAllInputsCaptured() {
+        this.setState({
+            inputsCaptured: {
+                teamA: [],
+                teamB: [],
+            },
+        });
+    }
+
+    onPermutationTriggered() {
+        this.setState({
+            inputsCaptured: {
+                teamA: [],
+                teamB: [],
+            },
+        });
     }
 
     serverMessagesHandler() {
@@ -263,6 +293,7 @@ class App extends Component {
                     <GameScreen
                         permutation={currentPermutation}
                         handleMaxScoreReached={this.onMaxScoreReached}
+                        handlePermutationTriggered={this.onPermutationTriggered}
                         songInfo={songInfo}
                         inputsCaptured={inputsCaptured}
                     />
