@@ -27,8 +27,30 @@
 }
 
 .permutation-indicator p {
-    color: white;
+    color: whitesmoke;
     font-weight: bold;
     font-size: 35px;
     margin-top: 65px;
+}
+
+.score-hud {
+    position: absolute;
+    top: 0;
+    color: whitesmoke;
+}
+
+.score-hud header {
+    background-color: #333;
+    font-size: 91px;
+    font-weight: bold;
+    text-align: center;
+    padding: 5px 30px;
+}
+
+.score-hud footer {
+    background-color: #333;
+    font-size: 41px;
+    font-weight: bold;
+    text-align: center;
+    padding: 5px 30px;
 }
