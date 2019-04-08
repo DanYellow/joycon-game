@@ -39,7 +39,8 @@
     flex-direction: column;
 }
 
-.choices .choices-list li {
+.choices .choices-list li,
+.choices .proposal-list li {
     margin-bottom: 85px;
     display: flex;
     padding: 20px 75px;
@@ -48,25 +49,14 @@
     border-radius: 20px;
 }
 
-.choices .choices-list li:last-child {
+.choices .choices-list li:last-child,
+.choices .proposal-list li:last-child {
     margin-bottom: 0;
 }
 
-.choices .choices-list li p {
+.choices .choices-list li p,
+.choices .proposal-list li p {
     font-size: 35px;
     color: aliceblue;
     font-weight: bold;
 }
-
-/* .choices .button p {
-    z-index: 9999;
-
-    transform: scaleY(-1) rotate(2.35619rad) translateY(-50%);
-    color: whitesmoke;
-    font-size: 55px;
-    position: absolute;
-    padding: 5px 7px;
-    background-color: #333333;
-    white-space: nowrap;
-    left: 100%;
-} */

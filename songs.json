@@ -5,20 +5,24 @@
             "start": 31,
             "end": 67
         },
-        "choices": [
+        "propositions": [
             {
+                "id": 56,
                 "name": "Our God (our God) is an Awesome God",
                 "isResponse": true
             },
             {
+                "id": 57,
                 "name": "Our God (our God) is an Awesome God",
                 "isResponse": false
             },
             {
+                "id": 59,
                 "name": "Our God (our God) is an Awesome God",
                 "isResponse": false
             },
             {
+                "id": 60,
                 "name": "Our God (our God) is an Awesome God",
                 "isResponse": false
             }

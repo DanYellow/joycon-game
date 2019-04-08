@@ -37,11 +37,25 @@ class PermutationIndicator extends Component {
         this.playSequence = this.playSequence.bind(this);
 
         this.playSequence();
+
+        this.globalSeq = null;
+        this.blinkSeq = null;
+        this.restartSeq = null;
+        this.endingSeq = null;
     }
 
     playSequence() {
-        const { sequence } = this.props;
-        setTimeout(() => {
+        const { sequence, isSequenceCanceling } = this.props;
+
+        if (isSequenceCanceling) {
+            clearTimeout(this.globalSeq);
+            clearTimeout(this.blinkSeq);
+            clearTimeout(this.restartSeq);
+            clearTimeout(this.endingSeq);
+            return;
+        }
+
+        this.globalSeq = setTimeout(() => {
             this.circleList.forEach(circle => {
                 circle.classList.remove('is-active');
             });
@@ -54,7 +68,7 @@ class PermutationIndicator extends Component {
                 this.playSequence();
             } else {
                 this.i = 0;
-                setTimeout(() => {
+                this.blinkSeq = setTimeout(() => {
                     this.circleList.forEach(circle => {
                         circle.classList.remove('is-active');
                     });
@@ -62,11 +76,11 @@ class PermutationIndicator extends Component {
 
                 if (this.nbSeqPlayed < this.NB_REPLAY_SEQ_MAX) {
                     this.nbSeqPlayed = this.nbSeqPlayed + 1;
-                    setTimeout(() => {
+                    this.restartSeq = setTimeout(() => {
                         this.playSequence();
                     }, this.TIME_BETWEEN_SEQ_PLAY);
                 } else {
-                    setTimeout(() => {
+                    this.endingSeq = setTimeout(() => {
                         this.props.handleSequenceEnded();
                     }, this.TIME_SEQ_PLAY);
                 }
@@ -122,7 +136,10 @@ class GameScreen extends Component {
             showChoices: false,
             showSelectNbChoices: false,
             teamTurn: null,
+            choice: null,
         };
+
+        this.deltaInputCapture = null;
         this.showAudioPlayer = this.showAudioPlayer.bind(this);
         this.checkTeamInputListCaptured = this.checkTeamInputListCaptured.bind(
             this
@@ -134,6 +151,12 @@ class GameScreen extends Component {
     }
 
     showAudioPlayer() {
+        const { showChoices, showSelectNbChoices } = this.state;
+
+        if (showChoices || showSelectNbChoices) {
+            return;
+        }
+
         this.setState({
             showAudioPlayer: true,
             showInputSequence: false,
@@ -141,7 +164,12 @@ class GameScreen extends Component {
     }
 
     checkTeamInputListCaptured() {
-        const { showAudioPlayer, showSelectNbChoices, teamTurn } = this.state;
+        const {
+            showAudioPlayer,
+            showSelectNbChoices,
+            teamTurn,
+            showChoices,
+        } = this.state;
 
         const {
             permutation,
@@ -163,6 +191,7 @@ class GameScreen extends Component {
                         showInputSequence: false,
                     },
                     () => {
+                        this.deltaInputCapture = Date.now();
                         handlePermutationTriggered();
                     }
                 );
@@ -179,6 +208,7 @@ class GameScreen extends Component {
                         showInputSequence: false,
                     },
                     () => {
+                        this.deltaInputCapture = Date.now();
                         handlePermutationTriggered();
                     }
                 );
@@ -186,17 +216,39 @@ class GameScreen extends Component {
         }
 
         if (!showAudioPlayer && teamTurn && showSelectNbChoices) {
-            const choice = inputsCaptured[teamTurn];
-            if (choice) {
-                console.log('inputsCaptured', choice);
-            }
-            // this.setState({
-            //     showSelectNbChoices: false,
-            //     showChoices: true,
-            // });
+            const choice = inputsCaptured[teamTurn][0];
+            console.log('choice', inputsCaptured);
+            // this.setState(
+            //     {
+            //         showSelectNbChoices: false,
+            //         showChoices: true,
+            //         choice,
+            //     },
+            //     () => {
+            //         this.deltaInputCapture = Date.now();
+            //         handlePermutationTriggered();
+            //     }
+            // );
+        }
+
+        if (
+            teamTurn &&
+            showChoices &&
+            this.deltaInputCapture + 500 > Date.now()
+        ) {
         }
 
         requestAnimationFrame(this.checkTeamInputListCaptured);
+    }
+
+    reinitTurn() {
+        this.setState({
+            showInputSequence: true,
+            showAudioPlayer: false,
+            showResults: false,
+            showChoices: false,
+            showSelectNbChoices: false,
+        });
     }
 
     render() {
@@ -206,16 +258,16 @@ class GameScreen extends Component {
             showAudioPlayer,
             showChoices,
             showSelectNbChoices,
+            choice,
             teamTurn,
         } = this.state;
-
-        const choice = teamTurn ? inputsCaptured[teamTurn] : null;
 
         return (
             <Fragment>
                 {showInputSequence && (
                     <PermutationIndicator
                         sequence={permutation}
+                        isSequenceCanceling={teamTurn}
                         handleSequenceEnded={this.showAudioPlayer}
                     />
                 )}

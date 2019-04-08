@@ -39,6 +39,14 @@ class App extends Component {
         this.socket = null;
         this.raf = null;
 
+        this.then = null;
+        this.elapsed = null;
+        this.fpsInterval = null;
+        this.startTime = null;
+        this.now = null;
+
+        this.lastInputPressed = null;
+
         this.maxScore = 30;
         this.state = {
             isControllersConnected: false,
@@ -68,6 +76,8 @@ class App extends Component {
         this.serverMessagesHandler = this.serverMessagesHandler.bind(this);
         this.onPermutationTriggered = this.onPermutationTriggered.bind(this);
         this.clearAllInputsCaptured = this.clearAllInputsCaptured.bind(this);
+        this.animate = this.animate.bind(this);
+        this.startAnimating = this.startAnimating.bind(this);
     }
 
     componentDidMount() {
@@ -88,6 +98,40 @@ class App extends Component {
             },
             false
         );
+    }
+
+    startAnimating(fps) {
+        this.fpsInterval = 1000 / fps;
+        this.then = window.performance.now();
+        this.startTime = this.then;
+
+        this.animate();
+    }
+
+    animate(newtime) {
+        // stop
+        // if (stop) {
+        //     return;
+        // }
+
+        // request another frame
+
+        this.raf = requestAnimationFrame(this.animate);
+
+        // calc elapsed time since last loop
+
+        this.now = newtime;
+        this.elapsed = this.now - this.then;
+
+        // if enough time has elapsed, draw the next frame
+
+        if (this.elapsed > this.fpsInterval) {
+            // Get ready for next frame by setting then=now, but...
+            // Also, adjust for fpsInterval not being multiple of 16.67
+            this.then = this.now - (this.elapsed % this.fpsInterval);
+
+            this.captureGamepadListInputs();
+        }
     }
 
     checkForControllers(event, connecting) {
@@ -121,14 +165,14 @@ class App extends Component {
     getInputPressed(gamepad) {
         const allButtons = gamepad.buttons.map((button, index) => {
             return {
-                value: button.value,
+                pressed: button.pressed,
                 index: index,
                 button: buttonMapping[index],
                 joycon: leftJoyConBtns.includes(index) ? 'LEFT' : 'RIGHT',
             };
         });
 
-        const buttonsPressed = allButtons.filter(button => button.value === 1);
+        const buttonsPressed = allButtons.filter(button => button.pressed);
 
         return buttonsPressed;
     }
@@ -160,8 +204,11 @@ class App extends Component {
             .filter(x => x)
             .find(gamepad => gamepad.id.includes('Joy-Con L+R'));
 
-        const inputListPressed = this.getInputPressed(joyconController);
+        if (!joyconController) {
+            return false;
+        }
 
+        const inputListPressed = this.getInputPressed(joyconController);
         if (inputListPressed.length) {
             let isReinitCapture = false;
             let joyConReset = null;
@@ -221,15 +268,12 @@ class App extends Component {
                     },
                 };
             });
-            // console.log(this.getInputPressed(joyconController));
         }
-
-        requestAnimationFrame(this.captureGamepadListInputs);
     }
 
     startGame() {
         this.socket.emit('ready_to_play');
-        this.raf = requestAnimationFrame(this.captureGamepadListInputs);
+        this.startAnimating(10);
     }
 
     onMaxScoreReached() {
@@ -246,12 +290,17 @@ class App extends Component {
     }
 
     onPermutationTriggered() {
-        this.setState({
-            inputsCaptured: {
-                teamA: [],
-                teamB: [],
+        this.setState(
+            {
+                inputsCaptured: {
+                    teamA: [],
+                    teamB: [],
+                },
             },
-        });
+            () => {
+                // cancelAnimationFrame(this.raf);
+            }
+        );
     }
 
     serverMessagesHandler() {
@@ -262,7 +311,7 @@ class App extends Component {
                 currentPermutation: msg.permutation,
                 songInfo: {
                     src: msg.song,
-                    choices: msg.choices,
+                    propositions: msg.propositions,
                     loop: msg.loop,
                 },
             });

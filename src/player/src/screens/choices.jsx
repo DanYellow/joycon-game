@@ -38,13 +38,20 @@ const ButtonListLayout = props => {
     );
 };
 
+const buttonMapping = [1, 0, 2, 3];
+
 const Choices = props => {
     const {
         isSelectNbChoicesStep = true,
         isSelectChoiceStep = false,
         choice,
+        songInfo,
     } = props;
-    console.log('choice', choice);
+
+    const nbProposalToRemove = 0;
+    const computedChoices = [...songInfo.propositions];
+    console.log('songInfo', computedChoices);
+
     return (
         <div className="choices">
             {isSelectNbChoicesStep && (
@@ -65,7 +72,19 @@ const Choices = props => {
                     </li>
                 </ul>
             )}
-            {isSelectChoiceStep && <p>Gekge,ezgzgz</p>}
+
+            {isSelectChoiceStep && (
+                <ul className="proposal-list">
+                    {computedChoices.map((proposal, idx) => {
+                        return (
+                            <li key={proposal.id}>
+                                <ButtonListLayout index={buttonMapping[idx]} />
+                                <p>{proposal.name}</p>
+                            </li>
+                        );
+                    })}
+                </ul>
+            )}
         </div>
     );
 };
