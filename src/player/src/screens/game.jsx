@@ -182,11 +182,7 @@ class GameScreen extends Component {
             showChoices,
         } = this.state;
 
-        const {
-            permutation,
-            inputsCaptured,
-            handlePermutationTriggered,
-        } = this.props;
+        const { permutation, inputsCaptured, resetInputCaptured } = this.props;
 
         if (!teamTurn || showAudioPlayer) {
             const inputListTeamA = inputsCaptured.teamA;
@@ -195,7 +191,7 @@ class GameScreen extends Component {
             if (
                 JSON.stringify(inputListTeamA) === JSON.stringify(permutation)
             ) {
-                handlePermutationTriggered();
+                resetInputCaptured();
                 this.setState(
                     {
                         teamTurn: 'teamA',
@@ -210,7 +206,7 @@ class GameScreen extends Component {
             if (
                 JSON.stringify(inputListTeamB) === JSON.stringify(permutation)
             ) {
-                handlePermutationTriggered();
+                resetInputCaptured();
                 this.setState({
                     teamTurn: 'teamB',
                     showSelectNbChoices: true,
@@ -231,7 +227,7 @@ class GameScreen extends Component {
                         nbChoices,
                     },
                     () => {
-                        handlePermutationTriggered();
+                        resetInputCaptured();
                     }
                 );
             }
@@ -258,11 +254,16 @@ class GameScreen extends Component {
                     this.updateScore(teamTurn);
                 }
 
-                this.setState({
-                    choice,
-                    showChoices: false,
-                    showResults: true,
-                });
+                this.setState(
+                    {
+                        choice,
+                        showChoices: false,
+                        showResults: true,
+                    },
+                    () => {
+                        resetInputCaptured();
+                    }
+                );
             }
         }
 
@@ -276,6 +277,7 @@ class GameScreen extends Component {
             showResults: false,
             showChoices: false,
             showSelectNbChoices: false,
+            teamTurn: null,
         });
     }
 
@@ -286,11 +288,10 @@ class GameScreen extends Component {
                 scores: {
                     ...(team === 'teamA'
                         ? { teamA: prevState.scores.teamA + 1 }
-                        : {}),
+                        : { teamA: prevState.scores.teamA }),
                     ...(team === 'teamB'
-                        ? { teamA: prevState.scores.teamB + 1 }
-                        : {}),
-                    teamB: 0,
+                        ? { teamB: prevState.scores.teamB + 1 }
+                        : { teamB: prevState.scores.teamB }),
                 },
             };
         });

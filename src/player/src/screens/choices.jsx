@@ -50,7 +50,6 @@ const Choices = props => {
 
     const nbProposalToRemove = 0;
     const computedChoices = [...songInfo.propositions];
-    console.log('songInfo', computedChoices);
 
     return (
         <div className="choices">

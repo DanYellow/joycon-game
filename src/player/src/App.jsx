@@ -332,7 +332,7 @@ class App extends Component {
                     <GameScreen
                         permutation={currentPermutation}
                         handleMaxScoreReached={this.onMaxScoreReached}
-                        handlePermutationTriggered={this.clearAllInputsCaptured}
+                        resetInputCaptured={this.clearAllInputsCaptured}
                         songInfo={songInfo}
                         inputsCaptured={inputsCaptured}
                     />
