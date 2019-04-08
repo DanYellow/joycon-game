@@ -1,0 +1,22 @@
+.results {
+    display: flex;
+}
+
+.results p {
+    font-size: 80px;
+    font-weight: bold;
+}
+
+.results .is-incorrect {
+    color: red;
+}
+
+.results .is-correct {
+    color: green;
+}
+
+.scores p {
+    font-size: 90px;
+    font-weight: bold;
+    color: whitesmoke;
+}

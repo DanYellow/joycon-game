@@ -52,10 +52,7 @@ class App extends Component {
             isControllersConnected: false,
             currentPermutation: null,
             turnCount: 1,
-            scores: {
-                teamA: 0,
-                teamB: 0,
-            },
+
             isStartScreen: true,
             isGameScreen: false,
             isResultScreen: false,
@@ -74,7 +71,6 @@ class App extends Component {
             this
         );
         this.serverMessagesHandler = this.serverMessagesHandler.bind(this);
-        this.onPermutationTriggered = this.onPermutationTriggered.bind(this);
         this.clearAllInputsCaptured = this.clearAllInputsCaptured.bind(this);
         this.animate = this.animate.bind(this);
         this.startAnimating = this.startAnimating.bind(this);
@@ -141,7 +137,7 @@ class App extends Component {
         if (connecting && isJoycon) {
             gamepad.vibrationActuator.playEffect('dual-rumble', {
                 startDelay: 0,
-                duration: 100,
+                duration: 150,
                 weakMagnitude: 0.5,
                 strongMagnitude: 1.0,
             });
@@ -273,7 +269,7 @@ class App extends Component {
 
     startGame() {
         this.socket.emit('ready_to_play');
-        this.startAnimating(10);
+        this.startAnimating(60);
     }
 
     onMaxScoreReached() {
@@ -281,15 +277,7 @@ class App extends Component {
     }
 
     clearAllInputsCaptured() {
-        this.setState({
-            inputsCaptured: {
-                teamA: [],
-                teamB: [],
-            },
-        });
-    }
-
-    onPermutationTriggered() {
+        cancelAnimationFrame(this.raf);
         this.setState(
             {
                 inputsCaptured: {
@@ -298,7 +286,9 @@ class App extends Component {
                 },
             },
             () => {
-                // cancelAnimationFrame(this.raf);
+                setTimeout(() => {
+                    requestAnimationFrame(this.animate);
+                }, 500);
             }
         );
     }
@@ -315,7 +305,7 @@ class App extends Component {
                     loop: msg.loop,
                 },
             });
-            console.log('msg', msg);
+            // console.log('msg', msg);
         });
     }
 
@@ -342,7 +332,7 @@ class App extends Component {
                     <GameScreen
                         permutation={currentPermutation}
                         handleMaxScoreReached={this.onMaxScoreReached}
-                        handlePermutationTriggered={this.onPermutationTriggered}
+                        handlePermutationTriggered={this.clearAllInputsCaptured}
                         songInfo={songInfo}
                         inputsCaptured={inputsCaptured}
                     />

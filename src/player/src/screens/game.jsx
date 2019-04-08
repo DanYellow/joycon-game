@@ -1,6 +1,7 @@
 import React, { Component, Fragment } from 'react';
 
 import ChoicesScreen from './choices';
+import ResultScreen from './results';
 
 import WaveWhite from '../images/wave-white.png';
 
@@ -136,11 +137,21 @@ class GameScreen extends Component {
             showChoices: false,
             showSelectNbChoices: false,
             teamTurn: null,
+            nbChoices: null,
             choice: null,
+
+            scores: {
+                teamA: 0,
+                teamB: 0,
+            },
         };
+
+        this.resultsMapping = [[3, 12], [1, 15], [0, 13], [2, 14]];
 
         this.deltaInputCapture = null;
         this.showAudioPlayer = this.showAudioPlayer.bind(this);
+        this.updateScore = this.updateScore.bind(this);
+        this.reinitTurn = this.reinitTurn.bind(this);
         this.checkTeamInputListCaptured = this.checkTeamInputListCaptured.bind(
             this
         );
@@ -151,9 +162,9 @@ class GameScreen extends Component {
     }
 
     showAudioPlayer() {
-        const { showChoices, showSelectNbChoices } = this.state;
+        const { showChoices, showSelectNbChoices, showResults } = this.state;
 
-        if (showChoices || showSelectNbChoices) {
+        if (showChoices || showSelectNbChoices || showResults) {
             return;
         }
 
@@ -176,6 +187,7 @@ class GameScreen extends Component {
             inputsCaptured,
             handlePermutationTriggered,
         } = this.props;
+
         if (!teamTurn || showAudioPlayer) {
             const inputListTeamA = inputsCaptured.teamA;
             const inputListTeamB = inputsCaptured.teamB;
@@ -183,6 +195,7 @@ class GameScreen extends Component {
             if (
                 JSON.stringify(inputListTeamA) === JSON.stringify(permutation)
             ) {
+                handlePermutationTriggered();
                 this.setState(
                     {
                         teamTurn: 'teamA',
@@ -190,52 +203,67 @@ class GameScreen extends Component {
                         showAudioPlayer: false,
                         showInputSequence: false,
                     },
-                    () => {
-                        this.deltaInputCapture = Date.now();
-                        handlePermutationTriggered();
-                    }
+                    () => {}
                 );
             }
 
             if (
                 JSON.stringify(inputListTeamB) === JSON.stringify(permutation)
             ) {
+                handlePermutationTriggered();
+                this.setState({
+                    teamTurn: 'teamB',
+                    showSelectNbChoices: true,
+                    showAudioPlayer: false,
+                    showInputSequence: false,
+                });
+            }
+        }
+
+        if (!showAudioPlayer && teamTurn && showSelectNbChoices) {
+            const nbChoices = inputsCaptured[teamTurn][0];
+
+            if (nbChoices) {
                 this.setState(
                     {
-                        teamTurn: 'teamB',
-                        showSelectNbChoices: true,
-                        showAudioPlayer: false,
-                        showInputSequence: false,
+                        showSelectNbChoices: false,
+                        showChoices: true,
+                        nbChoices,
                     },
                     () => {
-                        this.deltaInputCapture = Date.now();
                         handlePermutationTriggered();
                     }
                 );
             }
         }
 
-        if (!showAudioPlayer && teamTurn && showSelectNbChoices) {
+        // Display results
+        if (teamTurn && showChoices) {
             const choice = inputsCaptured[teamTurn][0];
-            console.log('choice', inputsCaptured);
-            // this.setState(
-            //     {
-            //         showSelectNbChoices: false,
-            //         showChoices: true,
-            //         choice,
-            //     },
-            //     () => {
-            //         this.deltaInputCapture = Date.now();
-            //         handlePermutationTriggered();
-            //     }
-            // );
-        }
 
-        if (
-            teamTurn &&
-            showChoices &&
-            this.deltaInputCapture + 500 > Date.now()
-        ) {
+            const { songInfo } = this.props;
+
+            if (choice) {
+                const idxResult = songInfo.propositions.findIndex(
+                    proposition => {
+                        return proposition.isResponse;
+                    }
+                );
+
+                const isCorrectChoice = this.resultsMapping[idxResult].includes(
+                    choice
+                );
+
+                if (isCorrectChoice) {
+                    this.updateScore(teamTurn);
+                }
+
+                this.setState({
+                    choice,
+                    showChoices: false,
+                    showResults: true,
+                });
+            }
         }
 
         requestAnimationFrame(this.checkTeamInputListCaptured);
@@ -251,16 +279,40 @@ class GameScreen extends Component {
         });
     }
 
+    updateScore(team) {
+        this.setState(prevState => {
+            return {
+                ...prevState,
+                scores: {
+                    ...(team === 'teamA'
+                        ? { teamA: prevState.scores.teamA + 1 }
+                        : {}),
+                    ...(team === 'teamB'
+                        ? { teamA: prevState.scores.teamB + 1 }
+                        : {}),
+                    teamB: 0,
+                },
+            };
+        });
+    }
+
     render() {
         const { permutation, songInfo, inputsCaptured } = this.props;
         const {
             showInputSequence,
             showAudioPlayer,
             showChoices,
+            showResults,
             showSelectNbChoices,
-            choice,
+            nbChoices,
             teamTurn,
+            choice,
+            scores,
         } = this.state;
+
+        const idxResult = songInfo.propositions.findIndex(proposition => {
+            return proposition.isResponse;
+        });
 
         return (
             <Fragment>
@@ -279,7 +331,17 @@ class GameScreen extends Component {
                         isSelectChoiceStep={showChoices}
                         songInfo={songInfo}
                         inputsCaptured={inputsCaptured}
-                        choice={choice}
+                        nbChoices={nbChoices}
+                    />
+                )}
+
+                {showResults && (
+                    <ResultScreen
+                        isRightChoice={this.resultsMapping[idxResult].includes(
+                            choice
+                        )}
+                        scores={scores}
+                        handleResultsDisplay={this.reinitTurn}
                     />
                 )}
             </Fragment>
