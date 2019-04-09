@@ -19,4 +19,10 @@
     font-size: 90px;
     font-weight: bold;
     color: whitesmoke;
+    text-align: center;
+}
+
+.scores .description {
+    font-size: 25px;
+    font-weight: normal;
 }

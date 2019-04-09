@@ -20,7 +20,10 @@
     <body>
         <ul id="song-list" class="is-hidden">
             <li>
-                <button data-song="song" data-idx="1">Song 1</button>
+                <button data-song="song" data-idx="0">test-song.mp3</button>
+            </li>
+            <li>
+                <button data-song="song" data-idx="1">hip-hop-test.mp3</button>
             </li>
             <li>
                 <button data-song="song" data-idx="2">Song 1</button>
@@ -30,9 +33,6 @@
             </li>
             <li>
                 <button data-song="song" data-idx="4">Song 1</button>
-            </li>
-            <li>
-                <button data-song="song" data-idx="5">Song 1</button>
             </li>
         </ul>
 
@@ -44,6 +44,7 @@
             <li><button data-team="teamA">Add point to team A</button></li>
             <li><button data-team="teamB">Add point to team B</button></li>
         </ul>
+        <button id="reload-turn">Reload turn</button>
         <script src="/socket.io/socket.io.js"></script>
 
         <script>
@@ -59,23 +60,28 @@
 
             Array.from(document.querySelectorAll('[data-song]')).forEach(e => {
                 e.addEventListener('click', function(e) {
-                    socket.emit('send_song', e.target.dataset.song);
+                    socket.emit('send_song', e.target.dataset.idx);
                 });
             });
 
             Array.from(document.querySelectorAll('[data-team]')).forEach(e => {
                 e.addEventListener('click', function(e) {
-                    if (
-                        !pointsInput.value ||
-                        Number.isInteger(pointsInput.value)
-                    ) {
-                        return;
-                    }
+                    // if (
+                    //     !pointsInput.value ||
+                    //     Number.isInteger(pointsInput.value)
+                    // ) {
+                    //     return;
+                    // }
                     socket.emit('add_score', {
                         team: e.target.dataset.team,
-                        pointsToAdd: pointsInput.value,
+                        pointsToAdd: 5,
                     });
                 });
+            });
+
+            var reloadButton = document.getElementById('reload-turn');
+            reloadButton.addEventListener('click', () => {
+                socket.emit('reload_turn');
             });
         </script>
     </body>

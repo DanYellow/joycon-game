@@ -58,6 +58,7 @@ class App extends Component {
             isResultScreen: false,
             hasEnterRightPermutation: false,
             showGameScreen: false,
+            needsToReloadTurn: false,
             inputsCaptured: {
                 teamA: [],
                 teamB: [],
@@ -310,26 +311,31 @@ class App extends Component {
     }
 
     serverMessagesHandler() {
-        this.socket.on('get_song', msg => {
-            console.log('msg.permutation', msg.permutation);
-            this.setState({
-                isGameScreen: true,
-                isStartScreen: false,
-                currentPermutation: msg.permutation,
-                songInfo: {
-                    src: msg.song,
-                    propositions: msg.propositions,
-                    loop: msg.loop,
-                },
+        this.socket
+            .on('get_song', msg => {
+                this.setState({
+                    isGameScreen: true,
+                    isStartScreen: false,
+                    currentPermutation: msg.permutation,
+                    songInfo: {
+                        src: msg.song,
+                        propositions: msg.propositions,
+                        loop: msg.loop,
+                    },
+                });
+                this.startAnimating(60);
+            })
+            .on('start_game', () => {
+                this.setState({
+                    isControllersConnected: true,
+                });
+                this.startAnimating(60);
             });
-            this.startAnimating(60);
-        });
 
-        this.socket.on('start_game', () => {
+        this.socket.on('reload_turn', msg => {
             this.setState({
-                isControllersConnected: true,
+                currentPermutation: msg.permutation,
             });
-            this.startAnimating(60);
         });
     }
 
@@ -348,7 +354,6 @@ class App extends Component {
                 {isStartScreen && (
                     <StartScreen
                         isControllersConnected={isControllersConnected}
-                        handleClick={this.startGame}
                     />
                 )}
 

@@ -14,7 +14,7 @@ class ResultScreen extends React.Component {
                     showScore: true,
                 },
                 () => {
-                    this.props.handleResultsDisplay();
+                    // this.props.handleResultsDisplay();
                 }
             );
         }, 750);
@@ -40,6 +40,9 @@ class ResultScreen extends React.Component {
                     <div className="scores">
                         <p>
                             {scores.teamA} | {scores.teamB}
+                        </p>
+                        <p className="description">
+                            En attente du tour suivant
                         </p>
                     </div>
                 )}

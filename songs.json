@@ -29,7 +29,7 @@
         ]
     },
     {
-        "song": "test-song.mp3",
+        "song": "hip-hop-test.mp3",
         "loop": {
             "start": 31,
             "end": 67

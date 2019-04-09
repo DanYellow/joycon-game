@@ -1,6 +1,9 @@
 import React, { Component, Fragment } from 'react';
 
+import io from 'socket.io-client';
+
 import ChoicesScreen from './choices';
+import TeamTurn from './team-turn';
 import ResultScreen from './results';
 
 import PermutationIndicator from './permutation-indicator';
@@ -14,8 +17,8 @@ const ScoreHUD = props => {
             <ul>
                 <li className="teamA">{scores.teamA} </li>
                 <li className="maxScore">
-                    <p>Score à atteindre</p>
-                    <p>30</p>
+                    {/* <p>Score à atteindre</p>
+                    <p>30</p> */}
                 </li>
                 <li className="teamB">{scores.teamB}</li>
             </ul>
@@ -65,6 +68,43 @@ class GameScreen extends Component {
 
     componentDidMount() {
         this.raf = requestAnimationFrame(this.checkTeamInputListCaptured);
+        const { resetInputCaptured } = this.props;
+
+        this.socket = io('http://localhost:8080');
+
+        this.socket
+            .on('reload_turn', msg => {
+                this.setState({
+                    showInputSequence: true,
+                    teamTurn: null,
+                });
+            })
+            .on('update_score', msg => {
+                const { showResults } = this.state;
+                if (showResults) {
+                    return false;
+                }
+                this.updateScore(msg);
+                this.setState(
+                    {
+                        teamTurn: null,
+                        showResults: true,
+                    },
+                    () => {
+                        resetInputCaptured();
+                    }
+                );
+                // this.reinitTurn()
+            })
+            .on('get_song', msg => {
+                const { showResults } = this.state;
+                if (showResults) {
+                    this.setState({
+                        showInputSequence: true,
+                        showResults: false,
+                    });
+                }
+            });
     }
 
     mapJoyconLeftInputs(inputList) {
@@ -113,6 +153,7 @@ class GameScreen extends Component {
                         showSelectNbChoices: true,
                         showAudioPlayer: false,
                         showInputSequence: false,
+                        showResults: false,
                     },
                     () => {}
                 );
@@ -133,6 +174,7 @@ class GameScreen extends Component {
                     showSelectNbChoices: true,
                     showAudioPlayer: false,
                     showInputSequence: false,
+                    showResults: false,
                 });
             } else if (
                 JSON.stringify(inputListTeamB) !==
@@ -151,6 +193,7 @@ class GameScreen extends Component {
                     {
                         showSelectNbChoices: false,
                         showChoices: true,
+                        showResults: false,
                         nbChoices,
                     },
                     () => {
@@ -161,38 +204,38 @@ class GameScreen extends Component {
         }
 
         // Display results
-        if (teamTurn && showChoices) {
-            const choice = inputsCaptured[teamTurn][0];
+        // if (teamTurn && showChoices) {
+        //     const choice = inputsCaptured[teamTurn][0];
 
-            const { songInfo } = this.props;
+        //     const { songInfo } = this.props;
 
-            if (choice) {
-                const idxResult = songInfo.propositions.findIndex(
-                    proposition => {
-                        return proposition.isResponse;
-                    }
-                );
+        //     if (choice) {
+        //         const idxResult = songInfo.propositions.findIndex(
+        //             proposition => {
+        //                 return proposition.isResponse;
+        //             }
+        //         );
 
-                const isCorrectChoice = this.resultsMapping[idxResult].includes(
-                    choice
-                );
+        //         const isCorrectChoice = this.resultsMapping[idxResult].includes(
+        //             choice
+        //         );
 
-                if (isCorrectChoice) {
-                    this.updateScore(teamTurn);
-                }
+        //         if (isCorrectChoice) {
+        //             this.updateScore(teamTurn);
+        //         }
 
-                this.setState(
-                    {
-                        choice,
-                        showChoices: false,
-                        showResults: true,
-                    },
-                    () => {
-                        resetInputCaptured();
-                    }
-                );
-            }
-        }
+        //         this.setState(
+        //             {
+        //                 choice,
+        //                 showChoices: false,
+        //                 showResults: true,
+        //             },
+        //             () => {
+        //                 resetInputCaptured();
+        //             }
+        //         );
+        //     }
+        // }
 
         requestAnimationFrame(this.checkTeamInputListCaptured);
     }
@@ -209,16 +252,24 @@ class GameScreen extends Component {
         });
     }
 
-    updateScore(team) {
+    updateScore(message) {
         this.setState(prevState => {
             return {
                 ...prevState,
                 scores: {
-                    ...(team === 'teamA'
-                        ? { teamA: prevState.scores.teamA + 1 }
+                    ...(message.team === 'teamA'
+                        ? {
+                              teamA:
+                                  prevState.scores.teamA +
+                                  Number(message.pointsToAdd),
+                          }
                         : { teamA: prevState.scores.teamA }),
-                    ...(team === 'teamB'
-                        ? { teamB: prevState.scores.teamB + 1 }
+                    ...(message.team === 'teamB'
+                        ? {
+                              teamB:
+                                  prevState.scores.teamB +
+                                  Number(message.pointsToAdd),
+                          }
                         : { teamB: prevState.scores.teamB }),
                 },
             };
@@ -238,9 +289,11 @@ class GameScreen extends Component {
             scores,
         } = this.state;
 
-        const idxResult = songInfo.propositions.findIndex(proposition => {
-            return proposition.isResponse;
-        });
+        // const idxResult = songInfo.propositions.findIndex(proposition => {
+        //     return proposition.isResponse;
+        // });
+
+        // const teamChoice = this.resultsMapping[idxResult].includes(choice);
 
         return (
             <Fragment>
@@ -254,7 +307,9 @@ class GameScreen extends Component {
                     />
                 )}
 
-                {(showChoices || showSelectNbChoices) && (
+                {teamTurn && <TeamTurn team={teamTurn} />}
+
+                {/* {(showChoices || showSelectNbChoices) && (
                     <ChoicesScreen
                         isSelectNbChoicesStep={showSelectNbChoices}
                         isSelectChoiceStep={showChoices}
@@ -262,15 +317,13 @@ class GameScreen extends Component {
                         inputsCaptured={inputsCaptured}
                         nbChoices={nbChoices}
                     />
-                )}
+                )} */}
 
                 {showResults && (
                     <ResultScreen
-                        isRightChoice={this.resultsMapping[idxResult].includes(
-                            choice
-                        )}
+                        isRightChoice={true}
                         scores={scores}
-                        handleResultsDisplay={this.reinitTurn}
+                        // handleResultsDisplay={this.reinitTurn}
                     />
                 )}
             </Fragment>
