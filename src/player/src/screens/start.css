@@ -28,3 +28,9 @@
     display: inline-block;
     margin-right: 30px;
 }
+
+.joy-con button {
+    appearance: none;
+    margin-top: 20px;
+    padding: 9px 15px;
+}

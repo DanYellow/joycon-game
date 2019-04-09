@@ -5,19 +5,49 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <meta http-equiv="X-UA-Compatible" content="ie=edge" />
         <title>Document</title>
+
+        <style>
+            ul.is-hidden {
+                display: none;
+            }
+        </style>
     </head>
     <body>
-        <div id="opil">fezfezfze</div>
-
-        <!-- <script src="./socket.io.js"></script> -->
-
+        <ul id="song-list" class="is-hidden">
+            <li>
+                <button data-song="song" data-idx="1">Song 1</button>
+            </li>
+            <li>
+                <button data-song="song" data-idx="2">Song 1</button>
+            </li>
+            <li>
+                <button data-song="song" data-idx="3">Song 1</button>
+            </li>
+            <li>
+                <button data-song="song" data-idx="4">Song 1</button>
+            </li>
+            <li>
+                <button data-song="song" data-idx="5">Song 1</button>
+            </li>
+        </ul>
         <script src="/socket.io/socket.io.js"></script>
-
-        <script src="gamecontroller.js"></script>
 
         <script>
             var socket = io();
-            socket.emit('chat message');
+
+            socket.on('start_host', () => {
+                document
+                    .getElementById('song-list')
+                    .classList.remove('is-hidden');
+                socket.emit('start_game');
+            });
+
+            Array.from(document.querySelectorAll('[data-song]')).forEach(e => {
+                e.addEventListener('click', function(e) {
+                    console.log(e.target.dataset.song);
+                    socket.emit('send_song', 'fezfezfze');
+                });
+            });
         </script>
     </body>
 </html>

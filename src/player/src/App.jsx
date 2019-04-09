@@ -74,24 +74,23 @@ class App extends Component {
         this.clearAllInputsCaptured = this.clearAllInputsCaptured.bind(this);
         this.animate = this.animate.bind(this);
         this.startAnimating = this.startAnimating.bind(this);
+        this.startTurn = this.startTurn.bind(this);
     }
 
     componentDidMount() {
         this.socket = io('http://localhost:8080');
         this.socket.emit('chat message');
 
+        this.checkForControllers();
+
         window.addEventListener(
             'gamepadconnected',
-            e => {
-                this.checkForControllers(e, true);
-            },
+            this.checkForControllers,
             false
         );
         window.addEventListener(
             'gamepaddisconnected',
-            e => {
-                this.checkForControllers(e, false);
-            },
+            this.checkForControllers,
             false
         );
     }
@@ -130,21 +129,27 @@ class App extends Component {
         }
     }
 
-    checkForControllers(event, connecting) {
-        const gamepad = event.gamepad;
-        const isJoycon = gamepad.id.includes('Joy-Con L+R');
+    checkForControllers(connecting) {
+        let gamepadList = navigator.getGamepads ? navigator.getGamepads() : [];
+        gamepadList = Array.from(gamepadList);
 
-        if (connecting && isJoycon) {
-            gamepad.vibrationActuator.playEffect('dual-rumble', {
+        const joyconController = gamepadList
+            .filter(x => x)
+            .find(gamepad => gamepad.id.includes('Joy-Con L+R'));
+
+        this.setState({
+            isControllersConnected: true,
+        });
+
+        if (connecting && joyconController) {
+            joyconController.vibrationActuator.playEffect('dual-rumble', {
                 startDelay: 0,
                 duration: 150,
                 weakMagnitude: 0.5,
                 strongMagnitude: 1.0,
             });
-            this.serverMessagesHandler();
-            this.setState({
-                isControllersConnected: true,
-            });
+
+            this.socket.emit('start_host');
         } else {
             this.setState(
                 {
@@ -272,19 +277,28 @@ class App extends Component {
         this.startAnimating(60);
     }
 
+    startTurn() {
+        this.clearAllInputsCaptured();
+        this.socket.emit('get_song');
+    }
+
     onMaxScoreReached() {
         console.log('onMaxScoreReached');
     }
 
-    clearAllInputsCaptured() {
+    clearAllInputsCaptured(team) {
         cancelAnimationFrame(this.raf);
         this.setState(
-            {
+            prevState => ({
                 inputsCaptured: {
-                    teamA: [],
-                    teamB: [],
+                    ...(team === 'teamA' || !team
+                        ? { teamA: [] }
+                        : { teamA: prevState.inputsCaptured.teamA }),
+                    ...(team === 'teamB' || !team
+                        ? { teamB: [] }
+                        : { teamB: prevState.inputsCaptured.teamB }),
                 },
-            },
+            }),
             () => {
                 setTimeout(() => {
                     requestAnimationFrame(this.animate);
@@ -294,7 +308,9 @@ class App extends Component {
     }
 
     serverMessagesHandler() {
-        this.socket.on('generate_permutation', msg => {
+        console.log('reggegrergr');
+        this.socket.on('get_song', msg => {
+            console.log('msg.permutation', msg.permutation);
             this.setState({
                 isGameScreen: true,
                 isStartScreen: false,
@@ -305,7 +321,12 @@ class App extends Component {
                     loop: msg.loop,
                 },
             });
-            // console.log('msg', msg);
+        });
+
+        this.socket.on('start_game', msg => {
+            this.setState({
+                isControllersConnected: true,
+            });
         });
     }
 
@@ -335,6 +356,7 @@ class App extends Component {
                         resetInputCaptured={this.clearAllInputsCaptured}
                         songInfo={songInfo}
                         inputsCaptured={inputsCaptured}
+                        handleNewTurn={this.startTurn}
                     />
                 )}
             </div>

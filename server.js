@@ -16,24 +16,41 @@ app.get('/', function(req, res) {
     res.sendFile(__dirname + '/src/index.html');
 });
 
+const getSong = songName => {
+    const randIndex = Math.floor(Math.random() * songsCopy.length);
+    const randomSong = songsCopy[randIndex];
+    // songsCopy.splice(randIndex, 1);
+
+    const permutation = _.shuffle([0, 1, 2, 3]);
+    // const permutation = [2, 3, 0, 1];
+    console.log('permutation', permutation);
+    return (message = Object.assign({}, { permutation }, randomSong));
+};
+
 io.on('connection', function(socket) {
     console.log('a user connected');
     socket.on('disconnect', function() {
         console.log('user disconnected');
     });
 
-    socket.on('ready_to_play', () => {
-        const randIndex = Math.floor(Math.random() * songsCopy.length);
-        const randomSong = songsCopy[randIndex];
-        // songsCopy.splice(randIndex, 1);
-
-        const message = Object.assign(
-            {},
-            { permutation: [2, 3, 0, 1] }, //_.shuffle([0, 1, 2, 3]) },
-            randomSong
-        );
-        socket.emit('generate_permutation', message);
+    socket.on('big_screen_ready', () => {
+        socket.emit('start_host');
     });
+
+    socket.on('send_song', songName => {
+        const message = getSong(songName);
+        socket.emit('get_song', message);
+    });
+
+    // socket.on('ready_to_play', () => {
+    //     const message = getSong();
+    //     socket.emit('generate_permutation', message);
+    // });
+
+    // socket.on('get_song', () => {
+    //     const message = getSong();
+    //     socket.emit('generate_permutation', message);
+    // });
 });
 
 http.listen(port, function() {

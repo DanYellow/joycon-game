@@ -7,7 +7,7 @@ import JoyConRight from '../images/joycon-r.png';
 import './start.css';
 
 export default props => {
-    const { isControllersConnected, handleClick } = props;
+    const { isControllersConnected } = props;
     return (
         <Fragment>
             <section className="joy-con">
@@ -23,11 +23,6 @@ export default props => {
                 {isControllersConnected && <p>Joy con connectés !</p>}
                 {!isControllersConnected && (
                     <p>Appuyez sur un bouton pour commencer !</p>
-                )}
-                {isControllersConnected && (
-                    <button type="button" onClick={handleClick}>
-                        Commencer le jeu
-                    </button>
                 )}
             </section>
         </Fragment>

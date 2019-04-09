@@ -37,15 +37,14 @@ const ScoreHUD = props => {
     const { scores } = props;
     return (
         <div className="score-hud">
-            <header>
-                <p>
-                    {scores.teamA} | {scores.teamB}
-                </p>
-            </header>
-            <footer>
-                <p>Score à atteindre</p>
-                <p>30</p>
-            </footer>
+            <ul>
+                <li className="teamA">{scores.teamA} </li>
+                <li className="maxScore">
+                    <p>Score à atteindre</p>
+                    <p>30</p>
+                </li>
+                <li className="teamB">{scores.teamB}</li>
+            </ul>
         </div>
     );
 };
@@ -125,6 +124,12 @@ class GameScreen extends Component {
                     },
                     () => {}
                 );
+            } else if (
+                JSON.stringify(inputListTeamA) !==
+                    JSON.stringify(permutation) &&
+                inputListTeamA.length === 4
+            ) {
+                resetInputCaptured('teamA');
             }
 
             if (
@@ -137,6 +142,13 @@ class GameScreen extends Component {
                     showAudioPlayer: false,
                     showInputSequence: false,
                 });
+            } else if (
+                JSON.stringify(inputListTeamB) !==
+                    JSON.stringify(permutation) &&
+                inputListTeamB.length === 4
+            ) {
+                console.log('errereer');
+                resetInputCaptured('teamB');
             }
         }
 
@@ -195,6 +207,7 @@ class GameScreen extends Component {
     }
 
     reinitTurn() {
+        this.props.handleNewTurn();
         this.setState({
             showInputSequence: true,
             showAudioPlayer: false,

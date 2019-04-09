@@ -1,43 +1,100 @@
-import React, { Fragment, useState } from 'react';
+import React, { Fragment, useState, useEffect } from 'react';
 
 import './results.css';
 
-const ResultScreen = props => {
-    const { handleResultsDisplay } = props;
-    const [state, setState] = useState({ showScore: false });
+class ResultScreen extends React.Component {
+    state = {
+        showScore: false,
+    };
 
-    setTimeout(() => {
-        setState(prevState => {
-            // Object.assign would also work
-            return { ...prevState, showScore: true };
-        });
-    }, 750);
+    componentDidMount() {
+        setTimeout(() => {
+            this.setState(
+                {
+                    showScore: true,
+                },
+                () => {
+                    this.props.handleResultsDisplay();
+                }
+            );
+        }, 750);
+    }
+    render() {
+        const { isRightChoice, scores } = this.props;
+        const { showScore } = this.state;
 
-    setTimeout(() => {
-        handleResultsDisplay();
-    }, 1500);
+        return (
+            <Fragment>
+                {!showScore && (
+                    <div className="results">
+                        {isRightChoice && (
+                            <p className="is-correct">Correct !</p>
+                        )}
+                        {!isRightChoice && (
+                            <p className="is-incorrect">Incorrect !</p>
+                        )}
+                    </div>
+                )}
 
-    const { isRightChoice, scores } = props;
-    return (
-        <Fragment>
-            {!state.showScore && (
-                <div className="results">
-                    {isRightChoice && <p className="is-correct">Correct !</p>}
-                    {!isRightChoice && (
-                        <p className="is-incorrect">Incorrect !</p>
-                    )}
-                </div>
-            )}
+                {showScore && (
+                    <div className="scores">
+                        <p>
+                            {scores.teamA} | {scores.teamB}
+                        </p>
+                    </div>
+                )}
+            </Fragment>
+        );
+    }
+}
 
-            {state.showScore && (
-                <div className="scores">
-                    <p>
-                        {scores.teamA} | {scores.teamB}
-                    </p>
-                </div>
-            )}
-        </Fragment>
-    );
-};
+// const ResultScreen = props => {
+//     const { handleResultsDisplay } = props;
+//     const [showScore, setShowScore] = useState(false);
+
+//     // sleep(750).then(() => {
+//     //     setState(prevState => {
+//     //         return { ...prevState, showScore: true };
+//     //     });
+
+//     //     handleResultsDisplay();
+//     // });
+
+//     setTimeout(() => {
+//         setShowScore(true);
+//     }, 750);
+
+//     // useEffect(() => {
+//     //     setTimeout(() => {
+//     //         setShowScore(true);
+//     //     }, 750);
+//     // }, []);
+
+//     useEffect(() => {
+//         console.log('geergre');
+//     }, [showScore]);
+
+//     const { isRightChoice, scores } = props;
+//     return (
+//         <Fragment>
+//             {!showScore && (
+//                 <div className="results">
+//                     {isRightChoice && <p className="is-correct">Correct !</p>}
+//                     {!isRightChoice && (
+//                         <p className="is-incorrect">Incorrect !</p>
+//                     )}
+//                 </div>
+//             )}
+
+//             {showScore && (
+//                 <div className="scores">
+//                     <p>
+//                         {scores.teamA} | {scores.teamB}
+//                     </p>
+//                 </div>
+//             )}
+//         </Fragment>
+//     );
+// };
 
 export default ResultScreen;

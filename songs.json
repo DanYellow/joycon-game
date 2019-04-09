@@ -27,5 +27,34 @@
                 "isResponse": false
             }
         ]
+    },
+    {
+        "song": "test-song.mp3",
+        "loop": {
+            "start": 31,
+            "end": 67
+        },
+        "propositions": [
+            {
+                "id": 56,
+                "name": "Clarinette",
+                "isResponse": false
+            },
+            {
+                "id": 57,
+                "name": "Hello",
+                "isResponse": true
+            },
+            {
+                "id": 59,
+                "name": "World",
+                "isResponse": false
+            },
+            {
+                "id": 60,
+                "name": "Our",
+                "isResponse": false
+            }
+        ]
     }
 ]
