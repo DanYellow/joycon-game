@@ -62,8 +62,8 @@ export default class PermutationIndicator extends Component {
             });
             const seqItem = sequence[this.i];
             const circle = this.circleList[seqItem];
-            console.log('this.i', sequence, seqItem);
-            console.log(circle);
+            // console.log('this.i', sequence, seqItem);
+            // console.log(circle);
             circle.classList.add('is-active');
 
             this.i++;

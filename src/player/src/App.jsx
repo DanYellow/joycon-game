@@ -23,8 +23,8 @@ const buttonMapping = {
 
 const leftJoyConBtns = [12, 13, 14, 15, 18, 19];
 
-// Indexes : joy-con r
-// Values : joy-con Z
+// Indexes : joy-con R
+// Values : joy-con L
 const joyconMapping = {
     0: 13,
     1: 15,
@@ -79,9 +79,9 @@ class App extends Component {
 
     componentDidMount() {
         this.socket = io('http://localhost:8080');
-        this.socket.emit('chat message');
 
         this.checkForControllers();
+        this.serverMessagesHandler();
 
         window.addEventListener(
             'gamepadconnected',
@@ -93,6 +93,8 @@ class App extends Component {
             this.checkForControllers,
             false
         );
+
+        this.socket.emit('big_screen_ready');
     }
 
     startAnimating(fps) {
@@ -149,7 +151,7 @@ class App extends Component {
                 strongMagnitude: 1.0,
             });
 
-            this.socket.emit('start_host');
+            this.socket.emit('big_screen_ready');
         } else {
             this.setState(
                 {
@@ -210,6 +212,7 @@ class App extends Component {
         }
 
         const inputListPressed = this.getInputPressed(joyconController);
+
         if (inputListPressed.length) {
             let isReinitCapture = false;
             let joyConReset = null;
@@ -273,7 +276,6 @@ class App extends Component {
     }
 
     startGame() {
-        this.socket.emit('ready_to_play');
         this.startAnimating(60);
     }
 
@@ -308,7 +310,6 @@ class App extends Component {
     }
 
     serverMessagesHandler() {
-        console.log('reggegrergr');
         this.socket.on('get_song', msg => {
             console.log('msg.permutation', msg.permutation);
             this.setState({
@@ -321,12 +322,14 @@ class App extends Component {
                     loop: msg.loop,
                 },
             });
+            this.startAnimating(60);
         });
 
-        this.socket.on('start_game', msg => {
+        this.socket.on('start_game', () => {
             this.setState({
                 isControllersConnected: true,
             });
+            this.startAnimating(60);
         });
     }
 

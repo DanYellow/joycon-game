@@ -21,8 +21,8 @@ const getSong = songName => {
     const randomSong = songsCopy[randIndex];
     // songsCopy.splice(randIndex, 1);
 
-    const permutation = _.shuffle([0, 1, 2, 3]);
-    // const permutation = [2, 3, 0, 1];
+    // const permutation = _.shuffle([0, 1, 2, 3]);
+    const permutation = [2, 3, 0, 1];
     console.log('permutation', permutation);
     return (message = Object.assign({}, { permutation }, randomSong));
 };
@@ -34,12 +34,17 @@ io.on('connection', function(socket) {
     });
 
     socket.on('big_screen_ready', () => {
-        socket.emit('start_host');
+        socket.broadcast.emit('start_host');
     });
 
     socket.on('send_song', songName => {
+        console.log('send_song');
         const message = getSong(songName);
-        socket.emit('get_song', message);
+        socket.broadcast.emit('get_song', message);
+    });
+
+    socket.on('add_score', message => {
+        socket.broadcast.emit('update_score', message);
     });
 
     // socket.on('ready_to_play', () => {

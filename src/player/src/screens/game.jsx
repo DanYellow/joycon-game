@@ -49,6 +49,15 @@ const ScoreHUD = props => {
     );
 };
 
+// Indexes : joy-con R
+// Values : joy-con L
+const joyconMapping = {
+    13: 0,
+    15: 1,
+    14: 2,
+    12: 3,
+};
+
 class GameScreen extends Component {
     constructor(props) {
         super(props);
@@ -84,6 +93,13 @@ class GameScreen extends Component {
         this.raf = requestAnimationFrame(this.checkTeamInputListCaptured);
     }
 
+    mapJoyconLeftInputs(inputList) {
+        console.log('f', inputList);
+        return inputList.map(input => {
+            return joyconMapping[input];
+        });
+    }
+
     showAudioPlayer() {
         const { showChoices, showSelectNbChoices, showResults } = this.state;
 
@@ -111,8 +127,13 @@ class GameScreen extends Component {
             const inputListTeamA = inputsCaptured.teamA;
             const inputListTeamB = inputsCaptured.teamB;
 
+            const inputListTeamAMapped = this.mapJoyconLeftInputs(
+                inputListTeamA
+            );
+
             if (
-                JSON.stringify(inputListTeamA) === JSON.stringify(permutation)
+                JSON.stringify(inputListTeamAMapped) ===
+                JSON.stringify(permutation)
             ) {
                 resetInputCaptured();
                 this.setState(
