@@ -1,5 +1,7 @@
 import React, { Component, Fragment } from 'react';
 
+import AudioPlayer from './audio-player';
+
 const colors = ['#FF5678', '#000000', '#FF2100'];
 
 const JoyConMainButtonUi = props => (
@@ -19,7 +21,7 @@ export default class PermutationIndicator extends Component {
         this.nbSeqPlayed = 0;
         this.TIME_SEQ_PLAY = 750;
         this.TIME_BETWEEN_SEQ_PLAY = 1700;
-        this.NB_REPLAY_SEQ_MAX = 2;
+        this.NB_REPLAY_SEQ_MAX = 2000;
 
         this.playSequence = this.playSequence.bind(this);
 
@@ -84,18 +86,16 @@ export default class PermutationIndicator extends Component {
                     this.restartSeq = setTimeout(() => {
                         this.playSequence();
                     }, this.TIME_BETWEEN_SEQ_PLAY);
-                } else {
-                    // this.endingSeq = setTimeout(() => {
-                    //     this.props.handleSequenceEnded();
-                    // }, this.TIME_SEQ_PLAY);
                 }
             }
         }, this.TIME_SEQ_PLAY);
     }
 
     render() {
+        const { songInfo } = this.props;
         return (
             <Fragment>
+                <AudioPlayer songInfo={songInfo} />
                 <div className="permutation-indicator">
                     <JoyConMainButtonUi />
                     <p>Mémorisez la permutation pour pouvoir répondre</p>

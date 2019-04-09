@@ -2,36 +2,10 @@ import React, { Component, Fragment } from 'react';
 
 import ChoicesScreen from './choices';
 import ResultScreen from './results';
+
 import PermutationIndicator from './permutation-indicator';
 
-import WaveWhite from '../images/wave-white.png';
-
 import './game.css';
-
-class AudioPlayer extends Component {
-    constructor(props) {
-        super(props);
-
-        this.audioPlayer = React.createRef();
-    }
-    render() {
-        const { songInfo } = this.props;
-        return (
-            <div className="audio-player">
-                <div className="illustration">
-                    <img src={WaveWhite} alt="" />
-                </div>
-                <audio
-                    ref={this.audioPlayer}
-                    src={`songs/${songInfo.src}`}
-                    controls
-                    autoPlay
-                    muted={true}
-                />
-            </div>
-        );
-    }
-}
 
 const ScoreHUD = props => {
     const { scores } = props;
@@ -94,10 +68,7 @@ class GameScreen extends Component {
     }
 
     mapJoyconLeftInputs(inputList) {
-        console.log('f', inputList);
-        return inputList.map(input => {
-            return joyconMapping[input];
-        });
+        return inputList.map(input => joyconMapping[input]);
     }
 
     showAudioPlayer() {
@@ -168,7 +139,6 @@ class GameScreen extends Component {
                     JSON.stringify(permutation) &&
                 inputListTeamB.length === 4
             ) {
-                console.log('errereer');
                 resetInputCaptured('teamB');
             }
         }
@@ -259,7 +229,6 @@ class GameScreen extends Component {
         const { permutation, songInfo, inputsCaptured } = this.props;
         const {
             showInputSequence,
-            showAudioPlayer,
             showChoices,
             showResults,
             showSelectNbChoices,
@@ -278,13 +247,13 @@ class GameScreen extends Component {
                 <ScoreHUD scores={scores} />
                 {showInputSequence && (
                     <PermutationIndicator
+                        songInfo={songInfo}
                         sequence={permutation}
                         isSequenceCanceling={teamTurn}
                         handleSequenceEnded={this.showAudioPlayer}
                     />
                 )}
 
-                {showAudioPlayer && <AudioPlayer songInfo={songInfo} />}
                 {(showChoices || showSelectNbChoices) && (
                     <ChoicesScreen
                         isSelectNbChoicesStep={showSelectNbChoices}
